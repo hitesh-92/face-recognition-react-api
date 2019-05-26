@@ -62,4 +62,31 @@ app.post('/register', (req, res) => {
 
 });
 
+app.get('/profile/:id', (req, res) => {
+
+  const { id } = req.params;
+
+  db.users.forEach(user => {
+    if(user.id == id) return res.json(user);
+  });
+
+  res.send(404).json({'err':'user not found'})
+
+});
+
+app.put('/image', (req, res) => {
+
+  const { id } = req.body;
+
+  db.users.forEach(user => {
+    if(user.id == id) {
+      user.entries++;
+      return res.json(user.entries);
+    }
+  });
+
+  res.send(404).json({'err':'user not found'})
+
+});
+
 app.listen(PORT, () => console.log(`Server Running - port:${PORT}`))
