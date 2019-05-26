@@ -1,5 +1,9 @@
+console.log('\x1Bc');
+
 const express = require('express');
 const bodyParser = require('body-parser');
+const bcrypt = require('bcryptjs');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -30,6 +34,10 @@ app.get('/', (req, res) => res.send(db.users));
 
 app.post('/signin', (req, res) => {
 
+  bcrypt.compare("CLAIRE", '$2a$10$C/2gQOixcFmN/fIhH63erukGn9dctQt7aSuq1BCcT9dSjh7/ES2ju').then((res) => {
+    console.log('SIGNIN claire-- ', res)
+  });
+
   const {email, password} = req.body;
 
   if(
@@ -47,19 +55,24 @@ app.post('/register', (req, res) => {
 
   const {name, email, password} = req.body;
 
-  const newUser = {
-    id:3,
-    entries: 0,
-    joined: new Date(),
-    name,
-    email,
-    password
+  encryptPassword(password).then(r => console.log('DONEEEEEE'))
+  // .then(saveUser)
+  // .then(() => {
+  //   console.log('--- USER SAVED')
+  //   res.json('User Saved')
+  // })
+  // .catch(err => console.log('Big Error'));
+
+  async function encryptPassword(password){
+
+    return await bcrypt.genSalt(10, function(err, salt) {
+      bcrypt.hash(password, salt, function(err, hash) {
+        console.log(hash)
+        return hash;
+      });
+    });
+
   }
-
-  db.users.push(newUser)
-
-  res.json(newUser)
-
 });
 
 app.get('/profile/:id', (req, res) => {
@@ -89,4 +102,6 @@ app.put('/image', (req, res) => {
 
 });
 
-app.listen(PORT, () => console.log(`Server Running - port:${PORT}`))
+app.listen(PORT, () => console.log(`Server Running - port:${PORT}`));
+
+//ENCRYPT USER PASSWORDS 4.
