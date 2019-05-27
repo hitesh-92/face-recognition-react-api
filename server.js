@@ -49,7 +49,11 @@ app.post('/signin', (req, res) => {
     email === db.users[0].email &&
     password === db.users[0].password
   ) {
-    res.json({'signedIn': true})
+
+    const user = db.users[0];
+    delete user.password;
+
+    res.json({'signedIn': true, user})
   } else {
     res.status(400).json('error logging in')
   }
@@ -91,17 +95,24 @@ app.put('/image', (req, res) => {
 
   const { id } = req.body;
 
+  console.log('\n-----\nUSER ID:: ', id)
+
+  let found = false;
+  let userEntries = null;
+
   db.users.forEach(user => {
     if(user.id == id) {
+      found = true;
       user.entries++;
-      return res.json(user.entries);
+      // return res.json(user.entries);
+      userEntries = user.entries;
     }
   });
 
-  res.send(404).json({'err':'user not found'})
+
+  if (found) return res.json(userEntries);
+  else res.send(404).json({'err':'user not found'})
 
 });
 
 app.listen(PORT, () => console.log(`Server Running - port:${PORT}`));
-
-//ENCRYPT USER PASSWORDS 4.
