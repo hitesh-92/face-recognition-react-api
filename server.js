@@ -29,20 +29,23 @@ const db = {
   ]
 }
 
-app.use(cors());
 app.use(bodyParser.json());
+app.use(cors());
 
 app.get('/', (req, res) => res.send(db.users));
 
 app.post('/signin', (req, res) => {
 
-  bcrypt.compare("CLAIRE", '$2a$10$C/2gQOixcFmN/fIhH63erukGn9dctQt7aSuq1BCcT9dSjh7/ES2ju').then((res) => {
-    console.log('SIGNIN claire-- ', res)
-  });
+  // bcrypt.compare("CLAIRE", '$2a$10$C/2gQOixcFmN/fIhH63erukGn9dctQt7aSuq1BCcT9dSjh7/ES2ju')
+  // .then((res) => {
+  //   console.log('SIGNIN claire-- ', res)
+  // });
 
-  const {email, password} = req.body;
+  const { email, password } = req.body;
 
-  if(
+  console.log(`email:${email}\npasswrd:${password}`)
+
+  if (
     email === db.users[0].email &&
     password === db.users[0].password
   ) {
