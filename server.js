@@ -60,24 +60,19 @@ app.post('/register', (req, res) => {
 
   const {name, email, password} = req.body;
 
-  encryptPassword(password).then(r => console.log('DONEEEEEE'))
-  // .then(saveUser)
-  // .then(() => {
-  //   console.log('--- USER SAVED')
-  //   res.json('User Saved')
-  // })
-  // .catch(err => console.log('Big Error'));
-
-  async function encryptPassword(password){
-
-    return await bcrypt.genSalt(10, function(err, salt) {
-      bcrypt.hash(password, salt, function(err, hash) {
-        console.log(hash)
-        return hash;
-      });
-    });
-
+  const newUser = {
+    id: db.users.length + 1,
+    entries: 0,
+    joined: new Date(),
+    email,
+    password,
+    name
   }
+
+  db.users.push(newUser)
+
+  res.json(newUser)
+
 });
 
 app.get('/profile/:id', (req, res) => {
