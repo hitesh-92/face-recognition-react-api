@@ -76,26 +76,50 @@ app.post('/register', (req, res) => {
   const {name, email, password} = req.body;
 
   const newUser = {
-    // id: old_db.users.length + 1,
-    // entries: 0,
     joined: new Date(),
     email,
-    // password,
     name
   }
 
-  // db.users.push(newUser)
-  db('users')
-  .returning('*')
-  .insert(newUser)
-  .then(user => {
-    console.log('saveddd', user[0])
-    res.json(user[0])
-  }).catch(err => {
-    res.status(500).json('Error: unable to register new user');
-  });
+  const hash = bcrypt.hashSync(password, 8);
 
-  // res.json(newUser)
+  db.transaction(tr => {
+    tr
+    .insert({ hash, email })
+    .into('login')
+    .returning('email')
+    .then(function saveNewUser (login_email){
+      return tr('users')
+        .returning('*')
+        .insert(newUser)
+        // .then(user => res.json(user[0]))
+    })
+    .then(() => {
+      tr.commit()
+      res.json('added')
+    })
+    .catch(() => {
+      tr.rollback()
+      res.status(400).json('register failed')
+    })
+
+  })
+
+  // res.json(hashedPassword || 'err');
+
+  //  -----------
+
+  // db.users.push(newUser)
+  // db('users')
+  // .returning('*')
+  // .insert(newUser)
+  // .then(user => {
+  //   console.log('saveddd', user[0])
+  //   res.json(user[0])
+  // }).catch(err => {
+  //   res.status(500).json('Error: unable to register new user');
+  // });
+
 
 });
 
