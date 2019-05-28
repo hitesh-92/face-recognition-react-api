@@ -6,6 +6,8 @@ const bcrypt = require('bcryptjs');
 const cors = require('cors');
 const knex = require('knex');
 
+const register = require('./controllers/register');
+
 const db = knex({
   client: 'pg',
   connection: {
@@ -18,27 +20,6 @@ const db = knex({
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-const old_db = {
-  users: [
-    {
-      id:1,
-      name:'alice',
-      email:'alice@mail.com',
-      password:'ALICE',
-      entries: 0,
-      joined: new Date()
-    },
-    {
-      id:2,
-      name:'bob',
-      email:'bob@mail.com',
-      password:'BOB',
-      entries: 0,
-      joined: new Date()
-    }
-  ]
-}
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -74,41 +55,7 @@ app.post('/signin', (req, res) => {
 
 });
 
-app.post('/register', (req, res) => {
-
-  const {name, email, password} = req.body;
-
-  const newUser = {
-    joined: new Date(),
-    email,
-    name
-  }
-
-  const hash = bcrypt.hashSync(password, 8);
-
-  db.transaction(tr => {
-    tr
-    .insert({ hash, email })
-    .into('login')
-    .returning('email')
-    .then(function saveNewUser (login_email){
-      return tr('users')
-        .returning('*')
-        .insert(newUser)
-    })
-    .then(() => {
-      tr.commit()
-      res.json('added')
-    })
-    .catch(() => {
-      tr.rollback()
-      res.status(400).json('register failed')
-    })
-
-  })
-
-
-});
+app.post('/register', (req, res) =>  {register.handleRegister(req, res, db, bcrypt) });
 
 app.get('/profile/:id', (req, res) => {
 
