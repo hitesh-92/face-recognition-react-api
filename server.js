@@ -4,6 +4,17 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
+const knex = require('knex');
+
+const postgres = knex({
+  client: 'pg',
+  connection: {
+    host : '127.0.0.1',
+    user : 'hitesh',
+    password : 'password',
+    database : 'face-recognition'
+  }
+});
 
 const app = express();
 const PORT = process.env.PORT || 5000;
