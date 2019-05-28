@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs');
 const cors = require('cors');
 const knex = require('knex');
 
-const postgres = knex({
+const db = knex({
   client: 'pg',
   connection: {
     host : '127.0.0.1',
@@ -19,7 +19,7 @@ const postgres = knex({
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const db = {
+const old_db = {
   users: [
     {
       id:1,
@@ -57,11 +57,11 @@ app.post('/signin', (req, res) => {
   console.log(`email:${email}\npasswrd:${password}`)
 
   if (
-    email === db.users[0].email &&
-    password === db.users[0].password
+    email === old_db.users[0].email &&
+    password === old_db.users[0].password
   ) {
 
-    const user = db.users[0];
+    const user = old_db.users[0];
     delete user.password;
 
     res.json({'signedIn': true, user})
@@ -76,17 +76,23 @@ app.post('/register', (req, res) => {
   const {name, email, password} = req.body;
 
   const newUser = {
-    id: db.users.length + 1,
-    entries: 0,
+    // id: old_db.users.length + 1,
+    // entries: 0,
     joined: new Date(),
     email,
-    password,
+    // password,
     name
   }
 
-  db.users.push(newUser)
+  // db.users.push(newUser)
+  db('users').insert(newUser).then(res => {
+    console.log('saveddd', res)
+    res.json(res)
+  }).catch(err => {
+    res.status(500).json(err);
+  });
 
-  res.json(newUser)
+  // res.json(newUser)
 
 });
 
@@ -111,7 +117,7 @@ app.put('/image', (req, res) => {
   let found = false;
   let userEntries = null;
 
-  db.users.forEach(user => {
+  old_db.users.forEach(user => {
     if(user.id == id) {
       found = true;
       user.entries++;
