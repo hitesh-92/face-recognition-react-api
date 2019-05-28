@@ -85,11 +85,14 @@ app.post('/register', (req, res) => {
   }
 
   // db.users.push(newUser)
-  db('users').insert(newUser).then(res => {
-    console.log('saveddd', res)
-    res.json(res)
+  db('users')
+  .returning('*')
+  .insert(newUser)
+  .then(user => {
+    console.log('saveddd', user[0])
+    res.json(user[0])
   }).catch(err => {
-    res.status(500).json(err);
+    res.status(500).json('Error: unable to register new user');
   });
 
   // res.json(newUser)
@@ -100,11 +103,20 @@ app.get('/profile/:id', (req, res) => {
 
   const { id } = req.params;
 
-  db.users.forEach(user => {
-    if(user.id == id) return res.json(user);
-  });
+  db
+  .select('*')
+  .from('users')
+  .where({id})
+  .then(user => {
+    // console.log('found user', user[0])
 
-  res.send(404).json({'err':'user not found'})
+    if (user.length) res.json(user[0])
+    else res.status(404).josn('Not found')
+  })
+  .catch(err => {
+    console.log('err finding user', err)
+    res.status(400).json('Error finding user')
+  });
 
 });
 
