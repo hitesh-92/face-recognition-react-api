@@ -47,27 +47,30 @@ app.get('/', (req, res) => res.send(db.users));
 
 app.post('/signin', (req, res) => {
 
-  // bcrypt.compare("CLAIRE", '$2a$10$C/2gQOixcFmN/fIhH63erukGn9dctQt7aSuq1BCcT9dSjh7/ES2ju')
-  // .then((res) => {
-  //   console.log('SIGNIN claire-- ', res)
-  // });
-
   const { email, password } = req.body;
 
-  console.log(`email:${email}\npasswrd:${password}`)
+  db
+  .select('email', 'hash')
+  .from('login')
+  .where('email', '=', email)
+  .then( ([{ hash }]) => {
+    const validPassword = bcrypt.compareSync(password, hash);
 
-  if (
-    email === old_db.users[0].email &&
-    password === old_db.users[0].password
-  ) {
+    if (validPassword){
+      return db
+      .select('*')
+      .from('users')
+      .where('email', '=', email)
+      .then( ([user]) => {
+        res.json(user)
+      })
+      .catch(err => res.status(400).json('unable to get user') )
+    } else {
+      res.status(400).json('invalid credentials')
+    }
+  })
+  .catch(err => res.status(400).json('wrong credentials') )
 
-    const user = old_db.users[0];
-    delete user.password;
-
-    res.json({'signedIn': true, user})
-  } else {
-    res.status(400).json('error logging in')
-  }
 
 });
 
@@ -92,7 +95,6 @@ app.post('/register', (req, res) => {
       return tr('users')
         .returning('*')
         .insert(newUser)
-        // .then(user => res.json(user[0]))
     })
     .then(() => {
       tr.commit()
@@ -104,21 +106,6 @@ app.post('/register', (req, res) => {
     })
 
   })
-
-  // res.json(hashedPassword || 'err');
-
-  //  -----------
-
-  // db.users.push(newUser)
-  // db('users')
-  // .returning('*')
-  // .insert(newUser)
-  // .then(user => {
-  //   console.log('saveddd', user[0])
-  //   res.json(user[0])
-  // }).catch(err => {
-  //   res.status(500).json('Error: unable to register new user');
-  // });
 
 
 });
