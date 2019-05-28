@@ -124,23 +124,20 @@ app.put('/image', (req, res) => {
 
   const { id } = req.body;
 
-  console.log('\n-----\nUSER ID:: ', id)
+  db('users')
+  .where('id', '=', id)
+  .increment('entries', 1)
+  .returning('entries')
+  .then(entries => {
+    console.log(entries)
+    if(entries.length) res.json(entries)
+    else res.status(404).json('Unable to update')
+  })
+  .catch(err => {
+    console.log('Error /image')
+    res.json('error updating /image')
+  })
 
-  let found = false;
-  let userEntries = null;
-
-  old_db.users.forEach(user => {
-    if(user.id == id) {
-      found = true;
-      user.entries++;
-      // return res.json(user.entries);
-      userEntries = user.entries;
-    }
-  });
-
-
-  if (found) return res.json(userEntries);
-  else res.send(404).json({'err':'user not found'})
 
 });
 
