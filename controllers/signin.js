@@ -2,6 +2,11 @@ const handleSignIn = (req, res, db, bcrypt) => {
 
   const { email, password } = req.body;
 
+  if (
+    email.length < 4 ||
+    password.length < 4
+  ) return res.status(400).json('Invalid form data');
+
   db
   .select('email', 'hash')
   .from('login')

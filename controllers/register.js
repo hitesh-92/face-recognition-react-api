@@ -2,6 +2,12 @@ const handleRegister = (req, res, db, bcrypt) => {
 
   const {name, email, password} = req.body;
 
+  if (
+    name.length < 1 ||
+    email.length < 4 ||
+    password.length < 4
+  ) return res.status(400).json('Invalid form data');
+
   const newUser = {
     joined: new Date(),
     email,
