@@ -11,24 +11,30 @@ const handleApiCall = (req, res) => {
 
   clarifai.models
   .predict( Clarifai.FACE_DETECT_MODEL, input )
-  .then(extractBoxData)
-  .then(function handle_Clarifai_Api_Response(box){
-    res.json(box)
+  .then(extractBoxesData)
+  .then(function handle_Clarifai_Api_Response(facesBoxData){
+    res.json(facesBoxData)
   })
   .catch(function clarifai_API_Error(err){
     console.log(err.status, err.statusText)
     res.status(400).json({msg:'unable to consume api', error:err})
   });
 
-  function extractBoxData(data){
-    const {
-      top_row: top,
-      left_col: left,
-      bottom_row: bottom,
-      right_col: right
-    } = data.outputs[0].data.regions[0].region_info.bounding_box;
+  function extractBoxesData(data){
+    // const {
+    //   top_row: top,
+    //   left_col: left,
+    //   bottom_row: bottom,
+    //   right_col: right
+    // } = data.outputs[0].data.regions[0].region_info.bounding_box;
+    //
+    // const facesDetected = data.outputs[0].data.regions.map(face => {
+    //   const faceBoxData = face.region_info.bounding_box;
+    // })
 
-    return {top, left, bottom, right};
+    // return {top, left, bottom, right};
+
+    return data.outputs[0].data.regions;
   };
 
 }
