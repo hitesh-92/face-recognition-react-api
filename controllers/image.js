@@ -1,29 +1,26 @@
 var Clarifai = require('clarifai');
 
 const clarifai = new Clarifai.App({
- apiKey: 'f22f7817782c4db1b5c24c1cc1b71e6f'
+  apiKey: 'f22f7817782c4db1b5c24c1cc1b71e6f'
 });
 
 const handleApiCall = (req, res) => {
 
   const { input } = req.body;
+  console.log('input:::', input.length)
 
-  clarifai.models.predict(
-    Clarifai.FACE_DETECT_MODEL, input
-  )
+  clarifai.models
+  .predict( Clarifai.FACE_DETECT_MODEL, input )
   .then(extractBoxData)
   .then(function handle_Clarifai_Api_Response(box){
-    res.status(200).json(box)
+    res.json(box)
   })
   .catch(function clarifai_API_Error(err){
-      console.log('error: ', err)
-      res.status(400).json('unable to consume api', err)
+    console.log(err.status, err.statusText)
+    res.status(400).json({msg:'unable to consume api', error:err})
   });
 
-
-
   function extractBoxData(data){
-
     const {
       top_row: top,
       left_col: left,
