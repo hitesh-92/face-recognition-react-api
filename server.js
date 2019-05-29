@@ -9,6 +9,7 @@ const knex = require('knex');
 const register = require('./controllers/register');
 const signin = require('./controllers/signin');
 const profile = require('./controllers/profile');
+const image = require('./controllers/image');
 
 const db = knex({
   client: 'pg',
@@ -34,25 +35,6 @@ app.post('/register', (req, res) =>  { register.handleRegister(req, res, db, bcr
 
 app.get('/profile/:id', (req, res) => { profile.handleProfile_GET(req, res, db) });
 
-app.put('/image', (req, res) => {
-
-  const { id } = req.body;
-
-  db('users')
-  .where('id', '=', id)
-  .increment('entries', 1)
-  .returning('entries')
-  .then(entries => {
-    console.log(entries)
-    if(entries.length) res.json(entries)
-    else res.status(404).json('Unable to update')
-  })
-  .catch(err => {
-    console.log('Error /image')
-    res.json('error updating /image')
-  })
-
-
-});
+app.put('/image', (req, res) => { image.handleImage(req, res, db) });
 
 app.listen(PORT, () => console.log(`Server Running - port:${PORT}`));
