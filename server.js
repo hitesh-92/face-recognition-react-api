@@ -27,7 +27,7 @@ const PORT = process.env.PORT || 5000;
 app.use(bodyParser.json());
 app.use(cors());
 
-app.get('/', (req, res) => res.send(db.users));
+app.get('/', (req, res) => res.send('Face Recognition API'));
 
 app.post('/signin', (req, res) => { signin.handleSignIn(req, res, db, bcrypt) });
 
