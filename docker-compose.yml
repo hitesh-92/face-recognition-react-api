@@ -9,7 +9,7 @@ services:
     command: npm start
     working_dir: /usr/src/face-recognition
     environment:
-      POSTGRES_URI: psql postgres://admin:password@postgres:5432/face-recognition-docker
+      POSTGRES_URI: postgres://admin:password@postgres:5432/face-recognition-docker
       # POSTGRES_USER: admin
       # POSTGRES_PASSWORD: password
       # POSTGRES_DB: face-recognition-docker
