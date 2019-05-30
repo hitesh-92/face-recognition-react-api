@@ -1,12 +1,33 @@
 version: '3'
 services:
+
+  #Back End API
   face-recognition-api:
     container_name: backend
     # image: node:12.3.2
     build: ./
     command: npm start
     working_dir: /usr/src/face-recognition
+    environment:
+      POSTGRES_URI: psql postgres://admin:password@postgres:5432/face-recognition-docker
+      # POSTGRES_USER: admin
+      # POSTGRES_PASSWORD: password
+      # POSTGRES_DB: face-recognition-docker
+      # POSTGRES_HOST: postgres
+    links:
+      - postgres
     ports:
       - "5000:5000"
     volumes:
       - ./:/usr/src/face-recognition
+
+  # Postgres
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: face-recognition-docker
+      POSTGRES_HOST: postgres
+    ports:
+      - "5432:5432"
