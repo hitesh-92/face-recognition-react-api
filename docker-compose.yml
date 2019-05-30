@@ -23,11 +23,11 @@ services:
 
   # Postgres
   postgres:
-    image: postgres
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
       POSTGRES_DB: face-recognition-docker
       POSTGRES_HOST: postgres
+    build: ./postgres
     ports:
       - "5432:5432"
