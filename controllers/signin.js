@@ -1,3 +1,5 @@
+const jwt  = require('jsonwebtoken');
+
 const handleSignIn = (req, res, db, bcrypt) => {
 
   const { email, password } = req.body;
@@ -31,13 +33,36 @@ const handleSignIn = (req, res, db, bcrypt) => {
 
 };
 
+const signToken = email => {
+  const jwtPayload = {email};
+  return jwt.sign(jwtPayload, 'JWT_SECRET', {expiresIn: '2 days'});
+}
+
+const createSessions = user => {
+  const { id, email } = user;
+  const token = signToken(email);
+  return {'succes':'true', id, token}
+}
+
 const signInAuthentication = (db, bcrypt) => (req, res) => {
   console.log(req.body)
   const { authorisation } = req.headers;
   return authorisation ? getAuthToken() :
     handleSignIn(req, res, db, bcrypt)
-    .then(resp => res.json(resp))
-    .catch(err => res.status(400).json(err))
+    .then(user => {
+      console.log('user =>', user)
+      return user.id && user.email ?
+      createSessions(user) :
+      Promise.reject('error logging in', user)
+    })
+    .then(session => {
+      console.log('session => ', session)
+      res.json(session)
+    })
+    .catch(err => {
+      console.log('catch err => ', err)
+      res.status(400).json(err)
+    })
 }
 
 module.exports = {
