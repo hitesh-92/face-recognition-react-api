@@ -5,13 +5,14 @@ const handleSignIn = (req, res, db, bcrypt) => {
   if (
     email.length < 4 ||
     password.length < 4
-  ) return res.status(400).json('Invalid form data');
+  ) return Promise.reject('Invalid form data');
 
-  db
+  return db
   .select('email', 'hash')
   .from('login')
   .where('email', '=', email)
-  .then( ([{ hash }]) => {
+  .then( ([ user ]) => {
+    const { hash } = user;
     const validPassword = bcrypt.compareSync(password, hash);
 
     if (validPassword){
@@ -19,20 +20,27 @@ const handleSignIn = (req, res, db, bcrypt) => {
       .select('*')
       .from('users')
       .where('email', '=', email)
-      .then( ([user]) => {
-        res.json(user)
-      })
-      .catch(err => res.status(400).json('unable to get user') )
+      .then( ([user]) => user)
+      .catch(err => Promise.reject('unable to get user') )
     } else {
-      res.status(400).json('invalid credentials')
+      Promise.reject('invalid credentials')
     }
   })
-  .catch(err => res.status(400).json('wrong credentials') )
+  .catch(err => Promise.reject('wrong credentials') )
 
 
 };
 
+const signInAuthentication = (db, bcrypt) => (req, res) => {
+  console.log(req.body)
+  const { authorisation } = req.headers;
+  return authorisation ? getAuthToken() :
+    handleSignIn(req, res, db, bcrypt)
+    .then(resp => res.json(resp))
+    .catch(err => res.status(400).json(err))
+}
 
 module.exports = {
-  handleSignIn
+  handleSignIn,
+  signInAuthentication
 }

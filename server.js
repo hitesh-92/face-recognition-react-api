@@ -34,7 +34,7 @@ app.use(morgan('combined'))
 
 app.get('/', (req, res) => res.send('Face Recognition API!!'));
 
-app.post('/signin', (req, res) => { signin.handleSignIn(req, res, db, bcrypt) });
+app.post('/signin', signin.signInAuthentication(db, bcrypt) );
 
 app.post('/register', (req, res) =>  { register.handleRegister(req, res, db, bcrypt) });
 
