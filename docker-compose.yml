@@ -14,8 +14,10 @@ services:
       # POSTGRES_PASSWORD: password
       # POSTGRES_DB: face-recognition-docker
       # POSTGRES_HOST: postgres
+      REDIS_URI: redis://redis:6379
     links:
       - postgres
+      - redis
     ports:
       - "5000:5000"
     volumes:
@@ -31,3 +33,9 @@ services:
     build: ./postgres
     ports:
       - "5432:5432"
+
+  # Redis
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
