@@ -35,7 +35,7 @@ app.post('/signin', signin.signInAuthentication(db, bcrypt, redisClient) );
 
 app.post('/register', (req, res) =>  { register.handleRegister(req, res, db, bcrypt) });
 
-app.get('/profile/:id', (req, res) => { profile.handleProfile_GET(req, res, db) });
+app.get('/profile/:id', auth.requireAuth(redisClient), (req, res) => { profile.handleProfile_GET(req, res, db) });
 app.post('/profile/:id', auth.requireAuth, (req, res) => { profile.handleProfileUpdate(req, res, db) });
 
 app.put('/image', auth.requireAuth, (req, res) => { image.handleImage(req, res, db) });
