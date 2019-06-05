@@ -38,6 +38,14 @@ const handleSignIn = (req, res, db, bcrypt) => {
 
 };
 
+const getAuthTokenId = (req, res) => {
+  const { authorisation } = req.headers;
+  return redisClient.get(authorisation, (err, reply) => {
+    if(err || !reply) return res.stats(400).json('Unauthorised');
+    res.json({id: reply});
+  })
+}
+
 const signToken = email => {
   const jwtPayload = {email};
 
@@ -59,7 +67,7 @@ const createSessions = user => {
 const signInAuthentication = (db, bcrypt) => (req, res) => {
   console.log(req.body)
   const { authorisation } = req.headers;
-  return authorisation ? getAuthToken() :
+  return authorisation ? getAuthTokenId(req, res) :
     handleSignIn(req, res, db, bcrypt)
     .then(user => {
       console.log('user =>', user)
