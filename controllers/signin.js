@@ -40,13 +40,20 @@ const handleSignIn = (req, res, db, bcrypt) => {
 
 const signToken = email => {
   const jwtPayload = {email};
+
   return jwt.sign(jwtPayload, 'JWT_SECRET', {expiresIn: '2 days'});
 }
+
+const setToken = (token, id) =>
+  Promise.resolve(redisClient.set(token, id));
+
 
 const createSessions = user => {
   const { id, email } = user;
   const token = signToken(email);
-  return {'succes':'true', id, token}
+  return setToken(token, id)
+  .then(() => ({'succes':'true', id, token}))
+  .catch(err => console.log('createSessoion Error => ', err))
 }
 
 const signInAuthentication = (db, bcrypt) => (req, res) => {
@@ -62,11 +69,11 @@ const signInAuthentication = (db, bcrypt) => (req, res) => {
     })
     .then(session => {
       console.log('session => ', session)
-      res.json(session)
+      res.status(202).json({session, from:'session'})
     })
     .catch(err => {
       console.log('catch err => ', err)
-      res.status(400).json(err)
+      res.status(400).json({from:'signInAuthentication', error: err})
     })
 }
 
