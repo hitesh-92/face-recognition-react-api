@@ -60,7 +60,7 @@ const createSessions = user => {
   const { id, email } = user;
   const token = signToken(email);
   return setToken(token, id)
-  .then(() => ({'succes':'true', id, token}))
+  .then(() => ({'success':true, id, token}))
   .catch(err => console.log('createSessoion Error => ', err))
 }
 
@@ -77,7 +77,7 @@ const signInAuthentication = (db, bcrypt) => (req, res) => {
     })
     .then(session => {
       console.log('session => ', session)
-      res.status(202).json({session, from:'session'})
+      res.status(200).json(session)
     })
     .catch(err => {
       console.log('catch err => ', err)
