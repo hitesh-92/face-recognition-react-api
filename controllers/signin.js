@@ -1,9 +1,4 @@
 const jwt  = require('jsonwebtoken');
-const redis = require('redis');
-
-const redisClient = redis.createClient(process.env.REDIS_URI);
-
-redisClient.on('error', (err) => console.log('REDIS ERR => ', err) )
 
 const handleSignIn = (req, res, db, bcrypt) => {
 
@@ -38,49 +33,56 @@ const handleSignIn = (req, res, db, bcrypt) => {
 
 };
 
-const getAuthTokenId = (req, res) => {
+const getAuthTokenId = (req, res, redisClient) => {
+
   const { authorisation } = req.headers;
+
   return redisClient.get(authorisation, (err, reply) => {
     if(err || !reply) return res.stats(400).json('Unauthorised');
+
     res.json({id: reply});
-  })
-}
+  });
+
+};
 
 const signToken = email => {
   const jwtPayload = {email};
-
   return jwt.sign(jwtPayload, 'JWT_SECRET', {expiresIn: '2 days'});
 }
 
-const setToken = (token, id) =>
+const setToken = (redisClient ,token, id) =>
   Promise.resolve(redisClient.set(token, id));
 
 
-const createSessions = user => {
+const createSessions = (user, redisClient) => {
+
   const { id, email } = user;
   const token = signToken(email);
-  return setToken(token, id)
+
+  return setToken(redisClient, token, id)
   .then(() => ({'success':true, id, token}))
   .catch(err => console.log('createSessoion Error => ', err))
 }
 
-const signInAuthentication = (db, bcrypt) => (req, res) => {
-  console.log(req.body)
+const signInAuthentication = (db, bcrypt, redisClient) => (req, res) => {
+
   const { authorisation } = req.headers;
-  return authorisation ? getAuthTokenId(req, res) :
+
+  return authorisation ? getAuthTokenId(req, res, redisClient) :
+
     handleSignIn(req, res, db, bcrypt)
     .then(user => {
-      console.log('user =>', user)
+
       return user.id && user.email ?
-      createSessions(user) :
+      createSessions(user, redisClient) :
       Promise.reject('error logging in', user)
     })
     .then(session => {
-      console.log('session => ', session)
+
       res.status(200).json(session)
     })
     .catch(err => {
-      console.log('catch err => ', err)
+      console.log('handleSignIn ERROR => ', err)
       res.status(400).json({from:'signInAuthentication', error: err})
     })
 }

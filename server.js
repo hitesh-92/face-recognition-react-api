@@ -6,24 +6,21 @@ const bcrypt = require('bcryptjs');
 const cors = require('cors');
 const knex = require('knex');
 const morgan = require('morgan');
+const redis = require('redis');
 
 const register = require('./controllers/register');
 const signin = require('./controllers/signin');
 const profile = require('./controllers/profile');
 const image = require('./controllers/image');
+const auth = require('./middleware/authorisation')
 
 const db = knex({
   client: 'pg',
-  // connection: {
-  //   host : process.env.POSTGRES_HOST,
-  //   user : process.env.POSTGRES_USER,
-  //   password : process.env.POSTGRES_PASSWORD,
-  //   database : process.env.POSTGRES_DB
-  // }
-
-  // setting from docker-compose.yml
   connection: process.env.POSTGRES_URI
 });
+
+const redisClient = redis.createClient(process.env.REDIS_URI);
+redisClient.on('error', (err) => console.log('REDIS ERR => ', err) )
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -34,16 +31,15 @@ app.use(morgan('combined'))
 
 app.get('/', (req, res) => res.send('Face Recognition API!!'));
 
-app.post('/signin', signin.signInAuthentication(db, bcrypt) );
+app.post('/signin', signin.signInAuthentication(db, bcrypt, redisClient) );
 
 app.post('/register', (req, res) =>  { register.handleRegister(req, res, db, bcrypt) });
 
 app.get('/profile/:id', (req, res) => { profile.handleProfile_GET(req, res, db) });
+app.post('/profile/:id', auth.requireAuth, (req, res) => { profile.handleProfileUpdate(req, res, db) });
 
-app.post('/profile/:id', (req, res) => { profile.handleProfileUpdate(req, res, db) });
+app.put('/image', auth.requireAuth, (req, res) => { image.handleImage(req, res, db) });
 
-app.put('/image', (req, res) => { image.handleImage(req, res, db) });
-
-app.post('/imageurl', (req, res) => { image.handleApiCall(req, res) });
+app.post('/imageurl', auth.requireAuth, (req, res) => { image.handleApiCall(req, res) });
 
 app.listen(PORT, () => console.log(`Server Running - port:${PORT}`));
